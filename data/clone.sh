@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git clone git@github.com:golly-splorts/gollyx-hellmouth-data
+git clone git@github.com:golly-splorts/golly-data gollyx-hellmouth-data
 
 git clone git@github.com:golly-splorts/gollyx-pseudo-data
 git clone git@github.com:golly-splorts/gollyx-toroidal-data
