@@ -1,0 +1,6 @@
+git+https://github.com/golly-splorts/gollyx-python.git@mainx#egg=gollyx_python
+jupyter
+numpy
+matplotlib
+seaborn
+pandas
