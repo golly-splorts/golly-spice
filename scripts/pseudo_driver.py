@@ -13,6 +13,6 @@ os.environ['GOLLYX_SPICE_TEST_MODE'] = "real"
 
 
 p = HellmouthSpiceManager(fixed_ngenerations = 100)
-print(p.map(threadpoolsize=1))
-#p.map(threadpoolsize=4)
+#p = PseudoSpiceManager(fixed_ngenerations = 100)
+p.map(threadpoolsize=4)
 # There is no reduce step
