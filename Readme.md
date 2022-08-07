@@ -56,13 +56,15 @@ That json file has the following structure:
 
 ```
     {
-        "team1Scores": [1, 2, 3, 4, ... ],
-        "team2Scores": [5, 6, 7, 8, ... ],
-        "victoryConditions1": [0.01, 0.02, 0.03, ...],
-        "victoryConditions2": [0.04, 0.05, 0.06, ...],
-        "victoryConditions3": [0.01, 0.02, 0.03, ...],
+        "liveCells1": [1, 2, 3, 4, ... ],
+        "liveCells2": [5, 6, 7, 8, ... ],
+        "last3": [[0.01, 0.02, 0.03], [0.04, 0.05, 0.06], ...]
     }
 ```
+
+The keys used to save cell counts are the same fields as the
+ones in the data structure returned by the GOL simulator's
+get live counts method (see gollyx-python library).
 
 ## Scripts
 
@@ -74,10 +76,3 @@ let it sit and churn through all the calculations with multiple threads.
 This is a bit complicated, because have to transfer some code from the backend generator
 approach to multithreading, and that code is troublesome to troubleshoot.
 
-## Snakemake
-
-Snakemake workflows to run simulations are in the `snakemake/` directory.
-
-We will haver lots of files, they may get large, so figure out a disk/buckets strategy.
-
-This is a good way to test Snakemake strategies.

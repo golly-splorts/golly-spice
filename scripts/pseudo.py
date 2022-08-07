@@ -2,19 +2,7 @@ import os, sys, subprocess, json, time
 from pprint import pprint
 
 from .cup_data import PseudoCup
-
-
-class PseudoGOL(gollyx_python.manager.HellmouthGOL):
-    rule_b = [3, 5, 7]
-    rule_s = [2, 3, 8]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            rule_b=self.rule_b,
-            rule_s=self.rule_s,
-            neighbor_color_legacy_mode=False,
-            *args, **kwargs
-        )
+from gollyx_python.manager import PseudoGOL
 
 
 class PseudoGOL_Instrumented(PseudoGOL):
