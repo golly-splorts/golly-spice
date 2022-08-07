@@ -1,4 +1,5 @@
-import os, sys, glob, json, subprocess
+from multiprocessing.pool import ThreadPool
+import os, sys, time, glob, json
 from cup_data import (
     CupBase,
     HellmouthCup,
@@ -18,15 +19,22 @@ from instrumented_simulators import (
     StarGOL_Instrumented,
     KleinGOL_Instrumented,
 )
+from utils import get_cup_rule_b, get_cup_rule_s
 
 
 class SpiceManager(object):
 
     CupDataClass = CupBase
 
-    def __init__(self, fixed_ngenerations=0):
+    def __init__(
+            self, 
+            fixed_ngenerations=0
+        ):
         self.fixed_ngenerations = fixed_ngenerations
         self.season0max = self.CupDataClass.GOLLYX_MAX_SEASON0
+        self.test_mode = os.environ.get("GOLLYX_SPICE_TEST_MODE", "")
+        if 'GOLLY_SPICE_TEST_MODE' in os.environ.keys():
+            raise Exception("ERROR: You specified GOLLY_SPICE_TEST_MODE but you must use GOLLYX_SPICE_TEST_MODE (with an X)!")
 
     def simulate_game(self, game, fixed_ngenerations, season_output_dir):
         """
@@ -50,25 +58,28 @@ class SpiceManager(object):
 
         print(f"Starting spice simulation of {gameid}")
         start = time.time()
-        if self.cup.lower()=="hellmouth":
-            rule_b = get_cup_rule_b(self.cup)
-            rule_s = get_cup_rule_s(self.cup)
+
+        cup = self.CupDataClass.name.lower()
+        if cup=="hellmouth":
+            rule_b = get_cup_rule_b(cup)
+            rule_s = get_cup_rule_s(cup)
             gol = HellmouthGOL_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
                 s1=s1, s2=s2, rows=rows, columns=columns, rule_b=rule_b, rule_s=rule_s
             )
-        elif self.cup.lower()=="toroidal":
-            rule_b = get_cup_rule_b(self.cup)
-            rule_s = get_cup_rule_s(self.cup)
+        elif cup=="toroidal":
+            rule_b = get_cup_rule_b(cup)
+            rule_s = get_cup_rule_s(cup)
             gol = ToroidalGOL_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
                 s1=s1, s2=s2, rows=rows, columns=columns, rule_b=rule_b, rule_s=rule_s
             )
-        elif self.cup.lower()=="pseudo":
-            rule_b = get_cup_rule_b(self.cup)
-            rule_s = get_cup_rule_s(self.cup)
+        elif cup=="pseudo":
+            rule_b = get_cup_rule_b(cup)
+            rule_s = get_cup_rule_s(cup)
+            import pdb; pdb.set_trace()
             gol = PseudoGOL_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
@@ -76,25 +87,25 @@ class SpiceManager(object):
             )
         # Rainbow?
         # Dragon?
-        elif self.cup.lower()=="star":
-            rule_b = get_cup_rule_b(self.cup)
-            rule_s = get_cup_rule_s(self.cup)
-            rule_c = get_cup_rule_c(self.cup)
+        elif cup=="star":
+            rule_b = get_cup_rule_b(cup)
+            rule_s = get_cup_rule_s(cup)
+            rule_c = get_cup_rule_c(cup)
             gol = StarGOLGenerations_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
                 s1=s1, s2=s2, rows=rows, columns=columns, rule_b=rule_b, rule_s=rule_s, rule_c=rule_c
             )
-        elif self.cup.lower()=="klein":
-            rule_b = get_cup_rule_b(self.cup)
-            rule_s = get_cup_rule_s(self.cup)
+        elif cup=="klein":
+            rule_b = get_cup_rule_b(cup)
+            rule_s = get_cup_rule_s(cup)
             gol = KleinGOL_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
                 s1=s1, s2=s2, rows=rows, columns=columns, rule_b=rule_b, rule_s=rule_s
             )
         else:
-            raise ValueError(f"Unrecognized cup: {self.cup}")
+            raise ValueError(f"Unrecognized cup: {cup}")
 
         while (fixed_ngenerations == 0 and gol.running) or (
             fixed_ngenerations > 0 and gol.generation < fixed_ngenerations
@@ -137,7 +148,7 @@ class SpiceManager(object):
                 raise FileNotFoundError(f"Error: could not find specified input data directory {input_dir}")
             if not os.path.exists(season_output_dir):
                 print(f"Output directory does not exist, creating it:  {season_output_dir}")
-                subprocess.call(['mkdir','-p',season_output_dir], shell=True)
+                os.makedirs(season_output_dir)
 
             seasonfile = os.path.join(input_dir, 'season.json')
             with open(seasonfile, 'r') as f:
@@ -184,18 +195,17 @@ class SpiceManager(object):
             # When running in multithread method, this function will wait
             # until the threadpool is empty before returning, so it really is
             # working in one-season batches
-            self._fill_threadpool(todo_games, season_output_dir)
+            self._fill_threadpool(threadpoolsize, todo_games, season_output_dir)
 
         print("=====================================")
         print("========== CONGRATULATIONS ==========")
         print("==========  YOU ARE DONE   ==========")
         print("=====================================")
 
-    def _fill_threadpool(self, todo_games, season_output_dir):
+    def _fill_threadpool(self, threadpoolsize, todo_games, season_output_dir):
 
-        if self.test_mode == "":
-            # Real mode
-            # Each thread will take game data as input, and dump out a json file
+        if self.test_mode == "" or self.test_mode == "multithread":
+            # multithread mode means, multi-threaded, running real simulations
             pool = ThreadPool(threadpoolsize)
             threadholder = []
             for gameid, game in todo_games.items():
@@ -215,20 +225,22 @@ class SpiceManager(object):
             print(" *** Congratulations, the season is finished! *** ")
 
         elif self.test_mode == "fake":
+            # Fake mode means, single-threaded, not running simulations
             for gameid, game in todo_games.items():
                 print(
                     f"    Processing game {gameid} (season0={game['season']} day0={game['day']} fixed_ngenerations={self.fixed_ngenerations})"
                 )
-                self.fake_simulate_sensitive_game(game, self.fixed_ngenerations)
+                self.fake_simulate_game(game, self.fixed_ngenerations, season_output_dir)
 
         elif self.test_mode == "real":
+            # real mode means, single-threaded, running actual simulations
             for gameid, game in todo_games.items():
                 print(
                     f"    Processing game {gameid} (season0={game['season']} day0={game['day']} fixed_ngenerations={self.fixed_ngenerations})"
                 )
                 # kludge to prevent stuck in infinite loop
                 game['patternName'] = 'random'
-                self.simulate_sensitive_game(game, self.fixed_ngenerations)
+                self.simulate_game(game, self.fixed_ngenerations, season_output_dir)
 
         else:
             raise Exception(f"Error: could not determine mode from {self.test_mode}")
