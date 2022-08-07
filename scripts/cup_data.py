@@ -1,8 +1,6 @@
 import os
 import re
-import pytz
 from datetime import datetime, timedelta
-from .error import CupNotStartedError
 
 
 class CupBase(object):
