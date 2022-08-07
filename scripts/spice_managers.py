@@ -56,9 +56,6 @@ class SpiceManager(object):
         elif 'gameid' in game.keys():
             gameid = game['gameid']
 
-        print(f"Starting spice simulation of {gameid}")
-        start = time.time()
-
         cup = self.CupDataClass.name.lower()
         if cup=="hellmouth":
             rule_b = get_cup_rule_b(cup)
@@ -113,15 +110,9 @@ class SpiceManager(object):
             gol.next_step()
 
         # Extract the information to be exported...
+        gol.export()
 
-
-        # Output game to tmpdir/<game-id>.json
-        gamejson = os.path.join(self.tmpdir, game["id"] + ".json")
-        with open(gamejson, "w") as f:
-            json.dump(game, f, indent=4)
-
-        time.sleep(1)
-        print(f"{prefix}Wrote game data to {gamejson}")
+        time.sleep(0.1)
 
 
     def map(self, threadpoolsize=2):

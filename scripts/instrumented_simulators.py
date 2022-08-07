@@ -1,3 +1,4 @@
+import os, json
 from gollyx_python.manager import (
     HellmouthGOL,
     PseudoGOL,
@@ -41,15 +42,15 @@ class HellmouthGOL_Instrumented(HellmouthGOL):
         t1s = [j['liveCells1'] for j in self.live_counts]
         t2s = [j['liveCells2'] for j in self.live_counts]
         export_dat = {
-            gameid: [
+            self.gameid: [
                 t1s,
                 t2s
             ]
         }
         # Export this dictionary to <game uuid>.json
-        jname = os.path.join(self.monitor_dir, gameid+".json")
+        jname = os.path.join(self.monitor_dir, self.gameid+".json")
         with open(jname, 'w') as f:
-            json.dump(f, export_dat)
+            json.dump(export_dat, f)
 
 class PseudoGOL_Instrumented(HellmouthGOL_Instrumented, PseudoGOL):
     pass
