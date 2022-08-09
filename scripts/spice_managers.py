@@ -28,10 +28,25 @@ class SpiceManager(object):
 
     def __init__(
             self, 
-            fixed_ngenerations=0
+            fixed_ngenerations=0,
+            season0start=-1,
+            season0end=-1,
         ):
         self.fixed_ngenerations = fixed_ngenerations
-        self.season0max = self.CupDataClass.GOLLYX_MAX_SEASON0
+
+        if season0start >= 0:
+            self.season0start = season0start
+        else:
+            self.season0start = 0
+
+        if season0end <= self.CupDataClass.GOLLYX_MAX_SEASON0 and season0end >= 0:
+            self.season0max = season0end
+        else:
+            self.season0max = self.CupDataClass.GOLLYX_MAX_SEASON0 
+
+        print(f"Start season: {self.season0start}")
+        print(f"End seasons: {self.season0max}")
+
         self.test_mode = os.environ.get("GOLLYX_SPICE_TEST_MODE", "")
         if 'GOLLY_SPICE_TEST_MODE' in os.environ.keys():
             raise Exception("ERROR: You specified GOLLY_SPICE_TEST_MODE but you must use GOLLYX_SPICE_TEST_MODE (with an X)!")
@@ -46,6 +61,9 @@ class SpiceManager(object):
         Each cup has its own GOL class, and stopping
         criteria is determined/implemented by that class.
         """
+        timeout_min = 60
+        timeout_sec = timeout_min * 60
+
         s1 = game['map']['initialConditions1']
         s2 = game['map']['initialConditions2']
         rows = game['map']["rows"]
@@ -55,6 +73,10 @@ class SpiceManager(object):
             gameid = game['id']
         elif 'gameid' in game.keys():
             gameid = game['gameid']
+
+        prefix = "    [+] Status Update: "
+        print(f"{prefix}{gameid} simulation starting")
+        start = time.time()
 
         cup = self.CupDataClass.name.lower()
         if cup=="hellmouth":
@@ -108,11 +130,30 @@ class SpiceManager(object):
             fixed_ngenerations > 0 and gol.generation < fixed_ngenerations
         ):
             gol.next_step()
+            if gol.generation % 100 == 0:
+                now = time.time()
+                if timeout_sec > 0 and (now - start) > timeout_sec:
+                    print(
+                        f"{prefix}{gameid} timed out! Last generation: {gol.generation}"
+                    )
+                    break
+                if gol.generation > 25000:
+                    print(
+                        f"{prefix}{gameid} timed out at 25,000 generations!"
+                    )
+                    break
+                if gol.generation % 1000 == 0:
+                    print(
+                        f"{prefix}{gameid} is on generation {gol.generation}!"
+                    )
 
         # Extract the information to be exported...
+        print(
+            f"{prefix}{gameid} Done! Last generation: {gol.generation}"
+        )
         gol.export()
 
-        time.sleep(0.1)
+        time.sleep(1.0)
 
 
     def map(self, threadpoolsize=2):
@@ -129,7 +170,7 @@ class SpiceManager(object):
         """
         cup = self.CupDataClass.name.lower()
         
-        for season0 in range(0, self.season0max):
+        for season0 in range(self.season0start, self.season0max+1):
 
             # These are parameters required by the instrumented simulator
             input_dir = os.path.abspath(os.path.join('..', 'data', f'gollyx-{cup}-data', f'season{season0}'))
