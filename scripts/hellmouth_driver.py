@@ -10,6 +10,4 @@ os.environ['GOLLYX_SPICE_TEST_MODE'] = "multithread"
 
 
 h = HellmouthSpiceManager()
-#h = HellmouthSpiceManager(season0end=4)
-#h = HellmouthSpiceManager(season0start=5)
 h.map(threadpoolsize=8)
