@@ -4,7 +4,7 @@ from gollyx_python.manager import (
     PseudoGOL,
     ToroidalGOL,
     #DragonCA,
-    #RainbowCA,
+    RainbowGOL,
     StarGOLGenerations,
     KleinGOL,
 )
@@ -88,17 +88,18 @@ class ToroidalGOL_Instrumented(InstrumentedBase, ToroidalGOL):
         return new_stats
 
 
-class DragonGOL_Instrumented(InstrumentedBase, DragonCA):
+#class DragonGOL_Instrumented(InstrumentedBase, DragonCA):
+#
+#    def __init__(self, *args, **kwargs):
+#        super().__init__(*args, **kwargs)
+#        self._config(**kwargs)
+#        self._init_live_counts(self)
+#
+#    def next_step(self):
+#        new_stats = super().next_step()
+#        self._save_live_counts(new_stats)
+#        return new_stats
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._config(**kwargs)
-        self._init_live_counts(self)
-
-    def next_step(self):
-        new_stats = super().next_step()
-        self._save_live_counts(new_stats)
-        return new_stats
 
 class RainbowGOL_Instrumented(InstrumentedBase, RainbowGOL):
     live_counts_keys = ['generation','victoryPct','liveCells1','liveCells2','liveCells3','liveCells4'] #, 'last3'] 
