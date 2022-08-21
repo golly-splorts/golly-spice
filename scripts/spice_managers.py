@@ -66,6 +66,9 @@ class SpiceManager(object):
 
         s1 = game['map']['initialConditions1']
         s2 = game['map']['initialConditions2']
+        if cup=="rainbow":
+            s3 = game['map']['initialConditions3']
+            s4 = game['map']['initialConditions4']
         rows = game['map']["rows"]
         columns = game['map']["columns"]
 
@@ -103,8 +106,20 @@ class SpiceManager(object):
                 gameid=gameid,
                 s1=s1, s2=s2, rows=rows, columns=columns, rule_b=rule_b, rule_s=rule_s
             )
-        # Rainbow?
-        # Dragon?
+        elif cup=="rainbow":
+            rule_b = get_cup_rule_b(cup)
+            rule_s = get_cup_rule_s(cup)
+            gol = RainbowGOL_Instrumented(
+                monitor_dir=season_output_dir,
+                gameid=gameid,
+                s1=s1, s2=s2, s3=s3, s4=s4,
+                rows=rows,
+                columns=columns,
+                rule_b=rule_b,
+                rule_s=rule_s,
+                nteams=nteams,
+            )
+        #elif cup=="dragon":
         elif cup=="star":
             rule_b = get_cup_rule_b(cup)
             rule_s = get_cup_rule_s(cup)
