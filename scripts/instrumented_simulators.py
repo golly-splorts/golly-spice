@@ -88,33 +88,52 @@ class ToroidalGOL_Instrumented(InstrumentedBase, ToroidalGOL):
         return new_stats
 
 
-#class DragonGOL_Instrumented(HellmouthGOL_Instrumented, DragonCA):
-#    pass
-#
-#class RainbowGOL_Instrumented(HellmouthGOL_Instrumented, RainbowGOL):
-#    live_counts_keys = ['generation','victoryPct','liveCells1','liveCells2','liveCells3','liveCells4'] #, 'last3'] 
-#
-#    def export(self):
-#        # Strip out the data we're most interested in: scores
-#        t1s = [j['liveCells1'] for j in self.live_counts]
-#        t2s = [j['liveCells2'] for j in self.live_counts]
-#        t3s = [j['liveCells3'] for j in self.live_counts]
-#        t4s = [j['liveCells4'] for j in self.live_counts]
-#        export_dat = {
-#            gameid: [
-#                t1s,
-#                t2s,
-#                t3s,
-#                t4s,
-#            ]
-#        }
-#        # Export this dictionary to <game uuid>.json
-#        jname = os.path.join(self.monitor_dir, gameid+".json")
-#        with open(jname, 'w') as f:
-#            json.dump(f, export_dat)
+class DragonGOL_Instrumented(InstrumentedBase, DragonCA):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
+
+class RainbowGOL_Instrumented(InstrumentedBase, RainbowGOL):
+    live_counts_keys = ['generation','victoryPct','liveCells1','liveCells2','liveCells3','liveCells4'] #, 'last3'] 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
+
+    def export(self):
+        # Strip out the data we're most interested in: scores
+        t1s = [j['liveCells1'] for j in self.live_counts]
+        t2s = [j['liveCells2'] for j in self.live_counts]
+        t3s = [j['liveCells3'] for j in self.live_counts]
+        t4s = [j['liveCells4'] for j in self.live_counts]
+        export_dat = {
+            gameid: [
+                t1s,
+                t2s,
+                t3s,
+                t4s,
+            ]
+        }
+        # Export this dictionary to <game uuid>.json
+        jname = os.path.join(self.monitor_dir, gameid+".json")
+        with open(jname, 'w') as f:
+            json.dump(f, export_dat)
 
 
-class StarGOL_Instrumented(HellmouthGOL_Instrumented, StarGOLGenerations):
+class StarGOL_Instrumented(InstrumentedBase, StarGOLGenerations):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -127,7 +146,7 @@ class StarGOL_Instrumented(HellmouthGOL_Instrumented, StarGOLGenerations):
         return new_stats
 
 
-class KleinGOL_Instrumented(HellmouthGOL_Instrumented, KleinGOL):
+class KleinGOL_Instrumented(InstrumentedBase, KleinGOL):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -138,3 +157,4 @@ class KleinGOL_Instrumented(HellmouthGOL_Instrumented, KleinGOL):
         new_stats = super().next_step()
         self._save_live_counts(new_stats)
         return new_stats
+
