@@ -19,7 +19,7 @@ from instrumented_simulators import (
     StarGOL_Instrumented,
     KleinGOL_Instrumented,
 )
-from utils import get_cup_rule_b, get_cup_rule_s
+from utils import get_cup_rule_b, get_cup_rule_s, get_cup_rule_c
 
 
 class SpiceManager(object):
@@ -98,7 +98,6 @@ class SpiceManager(object):
         elif cup=="pseudo":
             rule_b = get_cup_rule_b(cup)
             rule_s = get_cup_rule_s(cup)
-            import pdb; pdb.set_trace()
             gol = PseudoGOL_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
@@ -110,7 +109,7 @@ class SpiceManager(object):
             rule_b = get_cup_rule_b(cup)
             rule_s = get_cup_rule_s(cup)
             rule_c = get_cup_rule_c(cup)
-            gol = StarGOLGenerations_Instrumented(
+            gol = StarGOL_Instrumented(
                 monitor_dir=season_output_dir,
                 gameid=gameid,
                 s1=s1, s2=s2, rows=rows, columns=columns, rule_b=rule_b, rule_s=rule_s, rule_c=rule_c
