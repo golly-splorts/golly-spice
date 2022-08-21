@@ -10,13 +10,10 @@ from gollyx_python.manager import (
 )
 
 
-
-
-class HellmouthGOL_Instrumented(HellmouthGOL):
+class InstrumentedBase(object):
     live_counts_keys = ['generation','victoryPct','liveCells1','liveCells2'] #, 'last3']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def _config(self, **kwargs):
 
         if 'monitor_dir' not in kwargs.keys() or not os.path.isdir(kwargs['monitor_dir']):
             raise KeyError("Error: keyword arg 'monitor_dir' must be provided and must point to a directory that exists")
@@ -24,18 +21,17 @@ class HellmouthGOL_Instrumented(HellmouthGOL):
 
         if 'gameid' not in kwargs.keys():
             raise KeyError("Error: keyword arg 'gameid' must be provided to dump monitoring output to a file")
+
         self.gameid = kwargs['gameid']
 
+    def _init_live_counts(self, obj):
         self.live_counts = []
-        new_stats = self.life.get_stats()
-        new_live_count = {k : new_stats[k] for k in self.live_counts_keys}
-        self.live_counts.append(new_live_count)
+        new_stats = obj.count()
+        self._save_live_counts(new_stats)
 
-    def next_step(self):
-        new_stats = super().next_step()
+    def _save_live_counts(self, new_stats):
         new_live_count = {k : new_stats[k] for k in self.live_counts_keys}
         self.live_counts.append(new_live_count)
-        return new_stats
 
     def export(self):
         # Strip out the data we're most interested in: scores
@@ -52,11 +48,45 @@ class HellmouthGOL_Instrumented(HellmouthGOL):
         with open(jname, 'w') as f:
             json.dump(export_dat, f)
 
-class PseudoGOL_Instrumented(HellmouthGOL_Instrumented, PseudoGOL):
-    pass
 
-class ToroidalGOL_Instrumented(HellmouthGOL_Instrumented, ToroidalGOL):
-    pass
+class HellmouthGOL_Instrumented(InstrumentedBase, HellmouthGOL):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
+
+
+class PseudoGOL_Instrumented(InstrumentedBase, PseudoGOL):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(**kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
+
+
+class ToroidalGOL_Instrumented(InstrumentedBase, ToroidalGOL):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
+
 
 #class DragonGOL_Instrumented(HellmouthGOL_Instrumented, DragonCA):
 #    pass
@@ -83,8 +113,28 @@ class ToroidalGOL_Instrumented(HellmouthGOL_Instrumented, ToroidalGOL):
 #        with open(jname, 'w') as f:
 #            json.dump(f, export_dat)
 
+
 class StarGOL_Instrumented(HellmouthGOL_Instrumented, StarGOLGenerations):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
+
 
 class KleinGOL_Instrumented(HellmouthGOL_Instrumented, KleinGOL):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._config(**kwargs)
+        self._init_live_counts(self)
+
+    def next_step(self):
+        new_stats = super().next_step()
+        self._save_live_counts(new_stats)
+        return new_stats
