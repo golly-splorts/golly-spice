@@ -12,3 +12,10 @@ def get_cup_rule_s(cup):
         "klein": [2, 3],
     }
     return s[cup]
+
+def get_cup_rule_c(cup):
+    c = {
+        "star": 4
+    }
+    return c[cup]
+
