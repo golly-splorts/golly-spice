@@ -135,6 +135,7 @@ class RainbowGOL_Instrumented(InstrumentedBase, RainbowGOL):
 
 
 class StarGOL_Instrumented(InstrumentedBase, StarGOLGenerations):
+    live_counts_keys = ['generation','liveCells1','liveCells2'] #, 'last3']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -148,6 +149,7 @@ class StarGOL_Instrumented(InstrumentedBase, StarGOLGenerations):
 
 
 class KleinGOL_Instrumented(InstrumentedBase, KleinGOL):
+    live_counts_keys = ['generation','liveCells1','liveCells2'] #, 'last3']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
