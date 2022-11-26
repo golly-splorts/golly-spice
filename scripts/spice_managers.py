@@ -64,6 +64,8 @@ class SpiceManager(object):
         timeout_min = 60
         timeout_sec = timeout_min * 60
 
+        cup = self.CupDataClass.name.lower()
+
         s1 = game['map']['initialConditions1']
         s2 = game['map']['initialConditions2']
         if cup=="rainbow":
@@ -81,7 +83,6 @@ class SpiceManager(object):
         print(f"{prefix}{gameid} simulation starting")
         start = time.time()
 
-        cup = self.CupDataClass.name.lower()
         if cup=="hellmouth":
             rule_b = get_cup_rule_b(cup)
             rule_s = get_cup_rule_s(cup)
