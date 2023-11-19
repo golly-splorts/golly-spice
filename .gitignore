@@ -3,3 +3,4 @@ __pycache__/
 .ipynb_checkpoints
 gollyx-*-data
 instrument_data
+scripts/tmp
